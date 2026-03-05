@@ -1,42 +1,107 @@
-name: CI
-
+name: Release
 on:
   push:
-    branches: ["main", "dev"]
-  pull_request:
-    branches: ["main"]
-
+    tags:
+      - "v*.*.*"
+permissions:
+  contents: write
 jobs:
-  lint-and-build:
-    name: Lint & Smoke Test
+  build-linux:
+    name: Build Linux AppImage
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci
-
-      - name: Check for syntax errors
-        run: node --check main.js
-
-      - name: Verify package.json scripts exist
+      - name: Install Linux build deps
         run: |
-          node -e "
-            const pkg = require('./package.json');
-            const required = ['start', 'dist'];
-            for (const s of required) {
-              if (!pkg.scripts?.[s]) {
-                console.error('Missing script:', s);
-                process.exit(1);
-              }
-            }
-            console.log('All required scripts present.');
-          "
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools rpm fakeroot
+      - name: Build AppImage
+        run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-dist
+          path: dist/*.AppImage
+          if-no-files-found: error
+  build-windows:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build Windows installer
+        run: npm run dist:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-dist
+          path: |
+            dist/*.exe
+            dist/*.msi
+          if-no-files-found: error
+  build-mac:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Clear electron-builder cache
+        run: rm -rf ~/Library/Caches/electron-builder
+      - name: Build macOS DMG
+        run: npm run dist:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-dist
+          path: dist/*.dmg
+          if-no-files-found: error
+  release:
+    name: Create GitHub Release
+    needs: [build-linux, build-windows, build-mac]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          name: LegacyLauncher ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: |
+            artifacts/linux-dist/*
+            artifacts/windows-dist/*
+            artifacts/mac-dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
