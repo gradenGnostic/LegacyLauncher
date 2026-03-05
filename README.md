@@ -1,6 +1,7 @@
 # LegacyLauncher
 
 A custom launcher for Minecraft Legacy Console Edition.
+<img width="1281" height="703" alt="image" src="https://github.com/user-attachments/assets/3fdd3b7d-a181-4237-8bd0-951f95168505" />
 
 ## Features
 
