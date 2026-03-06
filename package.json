@@ -1,12 +1,13 @@
 {
   "name": "legacylauncher",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "dist": "electron-builder --linux AppImage",
+    "dist:flatpak": "electron-builder --linux flatpak",
     "dist:win": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg"
   },
@@ -25,7 +26,8 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        "AppImage",
+        "flatpak"
       ],
       "category": "Game",
       "icon": "512x512.png"

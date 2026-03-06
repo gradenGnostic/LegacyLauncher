@@ -8,6 +8,7 @@ const childProcess = require('child_process');
 const DEFAULT_REPO = "smartcmd/MinecraftConsoles";
 const DEFAULT_EXEC = "Minecraft.Client.exe";
 const TARGET_FILE = "LCEWindows64.zip";
+const LAUNCHER_REPO = "gradenGnostic/LegacyLauncher";
 
 let releasesData = [];
 let commitsData = [];
@@ -47,8 +48,105 @@ window.onload = async () => {
     });
 
     fetchGitHubData();
+    checkForLauncherUpdates();
     GamepadManager.init();
 };
+
+async function checkForLauncherUpdates() {
+    try {
+        const currentVersion = require('./package.json').version;
+        const res = await fetch(`https://api.github.com/repos/${LAUNCHER_REPO}/releases/latest`);
+        if (!res.ok) return;
+        
+        const latestRelease = await res.json();
+        const latestVersion = latestRelease.tag_name.replace('v', '');
+        
+        if (latestVersion !== currentVersion) {
+            const updateConfirmed = await promptLauncherUpdate(latestRelease.tag_name);
+            if (updateConfirmed) {
+                downloadAndInstallLauncherUpdate(latestRelease);
+            }
+        }
+    } catch (e) {
+        console.error("Launcher update check failed:", e);
+    }
+}
+
+async function promptLauncherUpdate(version) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('update-modal');
+        const confirmBtn = document.getElementById('btn-confirm-update');
+        const skipBtn = document.getElementById('btn-skip-update');
+        const closeBtn = document.getElementById('btn-close-update');
+
+        document.getElementById('update-modal-text').innerHTML = 
+            `A new Launcher version <b>${version}</b> is available.<br><br>` +
+            `Would you like to download and install it now?`;
+
+        modal.style.display = 'flex';
+        modal.style.opacity = '1';
+
+        const cleanup = (result) => {
+            modal.style.opacity = '0';
+            setTimeout(() => modal.style.display = 'none', 300);
+            confirmBtn.onclick = null;
+            skipBtn.onclick = null;
+            closeBtn.onclick = null;
+            resolve(result);
+        };
+
+        confirmBtn.onclick = () => cleanup(true);
+        skipBtn.onclick = () => cleanup(false);
+        closeBtn.onclick = () => cleanup(false);
+    });
+}
+
+async function downloadAndInstallLauncherUpdate(release) {
+    setProcessingState(true);
+    updateProgress(0, "Preparing Launcher Update...");
+
+    let assetPattern = "";
+    if (process.platform === 'win32') assetPattern = ".exe";
+    else if (process.platform === 'linux') assetPattern = ".AppImage";
+    else if (process.platform === 'darwin') assetPattern = ".dmg";
+
+    const asset = release.assets.find(a => a.name.toLowerCase().endsWith(assetPattern));
+    
+    if (!asset) {
+        showToast("No compatible update found for your OS.");
+        setProcessingState(false);
+        return;
+    }
+
+    try {
+        const homeDir = require('os').homedir();
+        const downloadPath = path.join(homeDir, 'Downloads', asset.name);
+        
+        updateProgress(10, `Downloading Launcher Update...`);
+        await downloadFile(asset.browser_download_url, downloadPath);
+        
+        updateProgress(100, "Download Complete. Launching Installer...");
+        
+        // Give time for UI update
+        await new Promise(r => setTimeout(r, 1000));
+
+        if (process.platform === 'win32') {
+            childProcess.exec(`start "" "${downloadPath}"`);
+        } else if (process.platform === 'linux') {
+            fs.chmodSync(downloadPath, 0o755);
+            childProcess.exec(`"${downloadPath}"`);
+        } else if (process.platform === 'darwin') {
+            childProcess.exec(`open "${downloadPath}"`);
+        }
+        
+        // Close the app to allow installation
+        setTimeout(() => ipcRenderer.send('window-close'), 2000);
+
+    } catch (e) {
+        showToast("Launcher Update Error: " + e.message);
+        setProcessingState(false);
+    }
+}
 
 async function scanCompatibilityLayers() {
     const select = document.getElementById('compat-select');
