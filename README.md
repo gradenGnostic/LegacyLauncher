@@ -101,7 +101,7 @@ The launcher is built with:
 ## Contributing
 
 Feel free to submit issues and pull requests for improvements.</content>
-## Star History
+
 ## Star History
 
 <a href="https://www.star-history.com/?repos=gradenGnostic%2FLegacyLauncher&type=date&legend=top-left">
