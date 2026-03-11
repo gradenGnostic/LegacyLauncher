@@ -1,107 +1,185 @@
+<div align="center">
+
 # LegacyLauncher
 
 A custom launcher for Minecraft Legacy Console Edition.
 
-<img width="1277" height="717" alt="image" src="https://github.com/user-attachments/assets/eaa9bae6-3b3b-4e39-a3c1-156e34abf3cc" />
-
+<table>
+  <tr>
+    <td align="center">
+      <img width="1920" src="https://github.com/user-attachments/assets/aa0466a2-11f7-400f-a061-f64938a08305" alt="LegacyLauncher Interface" />
+      <br />
+      <em>The interface of Legacy Launcher v3.0.1</em>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
-- **Minecraft-style GUI**: Authentic pixelated interface with Minecraft font and styling
-- **Automatic Updates**: Fetches latest releases from GitHub repositories
-- **Cross-platform Support**: Works on Windows and Linux
-- **Profiles**: Save your username and track playtime
-- **Custom Launch Options**: Configure IP, port, and server mode
+<table align="center">
+  <tr>
+    <td align="center" width="300">
+      🔄 <b>Automatic Updates</b><br />
+      <p align="center">Fetches and installs the latest releases directly from GitHub repositories.</p>
+    </td>
+    <td align="center" width="300">
+      💻 <b>Multi-Platform Support</b><br />
+      <p align="center">Compatible with Windows 10 64-bit+, Linux, and macOS Big Sur+.</p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="300">
+      👤 <b>Profile Management</b><br />
+      <p align="center">Persistent storage for usernames and automated playtime tracking.</p>
+    </td>
+    <td align="center" width="300">
+      ⚙️ <b>Advanced Launch</b><br />
+      <p align="center">Control over connection parameters, IPs, ports, and headless server mode.</p>
+    </td>
+  </tr>
+</table>
 
-## Installation
+<br />
 
-### From Source
-1. Clone or download this repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the launcher:
-   ```bash
-   npm start
-   ```
+---
 
+## Getting Started
 
-## Building
+<table>
+  <tr>
+    <td align="center" width="400">
+      🚀 <b>Standard Download</b><br />
+      <p align="center">
+        Visit the <a href="https://github.com/gradenGnostic/LegacyLauncher/releases/latest">Latest Releases</a> page and download the appropriate package for your system:
+      </p>
+      <ul style="display: inline-block; text-align: left;">
+        <li><b>Windows 10 64-bit+:</b> <code>LegacyLauncher.Setup.(version).exe</code></li>
+        <li><b>Linux:</b> <code>LegacyLauncher-(version).AppImage</code></li>
+        <li><b>macOS Big Sur+:</b> <code>LegacyLauncher-(version)-arm64.dmg</code></li>
+      </ul>
+    </td>
+    <td align="center" width="400">
+      🛠️ <b>Development & Contribution</b><br />
+      <p align="center">
+        To build from source or contribute to the project, ensure you have <a href="https://nodejs.org/">Node.js</a> installed and follow these steps:
+      </p>
+      <ol style="display: inline-block; text-align: left;">
+        <li>Clone the repository</li>
+        <li>Run <code>npm install</code></li>
+        <li>Run <code>npm start</code> to test</li>
+      </ol>
+    </td>
+  </tr>
+</table>
 
-### Linux AppImage
-```bash
-npm run dist
-```
+### Compiling Executables
 
-### Windows Installer
-```bash
-npm run dist:win
-```
+If you wish to package the launcher yourself, use the following commands based on your target platform:
 
-## Configuration
+| Platform | Command | Output Format |
+| :---: | :---: | :---: |
+| **Windows 10 64-bit+** | `npm run dist:win` | `.exe` Setup |
+| **Linux** | `npm run dist` | `.AppImage` Binary |
+| **macOS Big Sur+** | `npm run dist:mac` | `.dmg` Disk Image |
 
-### Repository Source
-By default, the launcher fetches releases from `smartcmd/MinecraftConsoles`. You can change this in the Options menu.
+<br />
 
-### Launch Options
-- **GitHub Repository**: Source repository for game releases
-- **Client Executable**: Name of the executable file (default: `Minecraft.Client.exe`)
-- **Compatibility Layer**: For Linux users - choose between direct execution, Wine, or Proton
-- **Connect/Bind IP**: Optional IP address for multiplayer
-- **Port**: Optional port number
-- **Server Mode**: Launch as headless server
+---
 
-### Profile Settings
-- **Username**: Your in-game player name
-- **Playtime Tracking**: Automatically tracks total playtime
+## Launcher Options
+
+<p>Customize your experience via the <b>Options</b> menu within the launcher.</p>
+
+| Setting | Description |
+| :--- | :--- |
+| **Installation Directory** | The local path where game files are stored |
+| **GitHub Repository Source** | The repository used to fetch game updates |
+| **Client Executable Name** | The specific filename the launcher attempts to execute |
+| **Launcher Music Volume** | Adjust the background audio level of the launcher |
+| **Connect/Bind IP** | Specify a custom IP address for network connections |
+| **Port** | Define the network port for multiplayer sessions |
+| **Launch as Headless Server (-server)** | Launch the client without a GUI for server hosting |
+| **Use Classic Minecraft Launcher UI** | Replaces the modern GUI with a layout inspired by the 2013 launcher |
+
+<br />
+
+---
 
 ## System Requirements
 
-- **Windows**: Direct execution of Windows executables
-- **Linux**: Wine or Proton for running Windows executables
-- **Internet**: Required for downloading game updates
+<table>
+  <tr>
+    <td align="center" width="260">
+      <b>Windows</b><br />
+      Windows 10 64-bit or Windows 11
+    </td>
+    <td align="center" width="260">
+      <b>Linux</b><br />
+      <code>Wine</code> is required to run Windows binaries
+    </td>
+    <td align="center" width="260">
+      <b>macOS</b><br />
+      macOS Big Sur or newer (Apple Silicon)
+    </td>
+  </tr>
+</table>
 
-## Compatibility Layers (Linux)
+### Linux Setup
+The `.AppImage` is designed to work across all distributions. To run Windows binaries, you must install the **Wine** compatibility layer using your package manager:
 
-The launcher supports several compatibility options for Linux:
+| Distribution | Command |
+| :--- | :--- |
+| **Ubuntu / Debian / Mint** | `sudo apt install wine` |
+| **Fedora** | `sudo dnf install wine` |
+| **Arch / Manjaro** | `sudo pacman -S wine` |
+| **openSUSE** | `sudo zypper install wine` |
 
-- **Direct**: Run native Linux executables (if available)
-- **Wine**: Wine compatibility layer
-- **Proton**: Steam's Proton compatibility layer
+<br />
 
-## Dependencies
+---
 
-- **Electron**: Cross-platform desktop app framework
-- **discord-rpc**: Discord Rich Presence integration
-- **extract-zip**: ZIP archive extraction
-- **Tailwind CSS**: UI styling (via CDN)
+## Technical Stack
 
-## Development
+**Built With:**
+`Electron` • `Node.js` • `Tailwind CSS` • `Discord RPC`
 
-The launcher is built with:
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Electron with Node.js
-- **Styling**: Custom CSS with Minecraft theme + Tailwind CSS
-- **Build**: Electron Builder
+**Development Components:**
+`HTML5` • `CSS3` • `JavaScript` • `Electron Builder`
+
+<br />
+
+---
 
 ## Troubleshooting
 
-### Common Issues
+<table>
+  <tr>
+    <td align="left" width="400">
+      <b>Common Solutions:</b>
+      <ul>
+        <li><b>Repository Error:</b> Verify the name in Options</li>
+        <li><b>Executable Error:</b> Check if filename matches download</li>
+        <li><b>Launch Failure:</b> Verify Wine is installed on your system</li>
+        <li><b>Discord Error:</b> Ensure Discord is open with RPC enabled</li>
+      </ul>
+    </td>
+    <td align="left" width="400">
+      <b>Linux Specifics:</b>
+      <ul>
+        <li><b>Wine Check:</b> Run <code>wine --version</code> to verify install</li>
+        <li><b>AppImage Permissions:</b> <code>chmod +x LegacyLauncher-*.AppImage</code></li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-1. **Repository not found**: Check the repository name in Options
-2. **Executable not found**: Verify the executable name matches the downloaded file
-3. **Launch failures**: Try different compatibility layers on Linux
-4. **Discord RPC issues**: Ensure Discord is running and RPC is enabled
-
-### Linux Specific
-- Install Wine: `sudo apt install wine` (Ubuntu/Debian)
-- For Proton: Requires Steam installation
-- AppImage permissions: `chmod +x LegacyLauncher-*.AppImage`
+<br />
 
 ## Contributing
 
-Feel free to submit issues and pull requests for improvements.</content>
+Feel free to submit **Issues** and **Pull Requests** to help improve the launcher!
+
+<br />
 
 ## Star History
 
@@ -112,3 +190,5 @@ Feel free to submit issues and pull requests for improvements.</content>
    <img alt="Star History Chart" src="https://api.star-history.com/image?repos=gradenGnostic/LegacyLauncher&type=date&legend=top-left" />
  </picture>
 </a>
+
+</div>
