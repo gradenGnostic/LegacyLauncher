@@ -76,6 +76,7 @@ The launcher supports several compatibility options for Linux:
 - **discord-rpc**: Discord Rich Presence integration
 - **extract-zip**: ZIP archive extraction
 - **Tailwind CSS**: UI styling (via CDN)
+- **UI Sounds**: Using the free version of [JDSherbert's Ultimate UI SFX Pack on itch.io](https://jdsherbert.itch.io/ultimate-ui-sfx-pack)
 
 ## Development
 

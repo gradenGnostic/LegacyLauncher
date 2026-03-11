@@ -300,6 +300,73 @@ const GamepadManager = {
     }
 };
 
+const UiSoundManager = {
+    files: {
+        cursor: 'JDSherbert - Ultimate UI SFX Pack - Cursor - 1.mp3',
+        select: 'JDSherbert - Ultimate UI SFX Pack - Select - 1.mp3',
+        cancel: 'JDSherbert - Ultimate UI SFX Pack - Cancel - 1.mp3',
+        popupOpen: 'JDSherbert - Ultimate UI SFX Pack - Popup Open - 1.mp3',
+        popupClose: 'JDSherbert - Ultimate UI SFX Pack - Popup Close - 1.mp3',
+        error: 'JDSherbert - Ultimate UI SFX Pack - Error - 1.mp3'
+    },
+    cache: {},
+    lastPlayedAt: {},
+    cooldownMs: 70,
+    lastHoverItem: null,
+
+    init() {
+        Object.entries(this.files).forEach(([key, file]) => {
+            this.cache[key] = new Audio(file);
+            this.cache[key].preload = 'auto';
+            this.cache[key].volume = key === 'cursor' ? 0.45 : 0.6;
+        });
+
+        document.addEventListener('focusin', (e) => {
+            if (e.target?.classList?.contains('nav-item')) this.play('cursor');
+        });
+
+        document.addEventListener('pointerover', (e) => {
+            const navItem = e.target?.closest?.('.nav-item');
+            if (!navItem || navItem === this.lastHoverItem) return;
+            this.lastHoverItem = navItem;
+            this.play('cursor');
+        });
+
+        document.addEventListener('pointerleave', () => {
+            this.lastHoverItem = null;
+        });
+
+        document.addEventListener('click', (e) => {
+            const navItem = e.target?.closest?.('.nav-item');
+            if (!navItem) return;
+            const label = (navItem.textContent || '').trim().toLowerCase();
+            if (label.includes('cancel') || label.includes('close') || label.includes('back') || label.includes('later')) {
+                this.play('cancel');
+                return;
+            }
+            this.play('select');
+        });
+    },
+
+    play(name) {
+        const now = Date.now();
+        if (this.lastPlayedAt[name] && now - this.lastPlayedAt[name] < this.cooldownMs) return;
+        this.lastPlayedAt[name] = now;
+
+        const audio = this.cache[name];
+        if (!audio) return;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+    },
+
+    playToast(message) {
+        const normalized = String(message || '').toLowerCase();
+        if (normalized.includes('error') || normalized.includes('failed') || normalized.includes('missing') || normalized.includes('required')) {
+            this.play('error');
+        }
+    }
+};
+
 const MusicManager = {
     audio: new Audio(),
     playlist: [],
@@ -442,6 +509,31 @@ async function migrateLegacyConfig() {
     currentInstance = instances.find(i => i.id === currentInstanceId) || instances[0];
 }
 
+function isSteamDeckEnvironment() {
+    if (process.platform !== 'linux') return false;
+
+    const env = process.env || {};
+    if (env.STEAMDECK === '1' || env.SteamDeck === '1') return true;
+
+    try {
+        const osRelease = fs.readFileSync('/etc/os-release', 'utf8').toLowerCase();
+        if (osRelease.includes('steamos') || osRelease.includes('steam deck')) return true;
+    } catch (_) {}
+
+    return false;
+}
+
+function focusPrimaryPlayButton() {
+    const classicPlayBtn = document.getElementById('classic-btn-play');
+    const mainPlayBtn = document.getElementById('btn-play-main');
+    const target = (classicPlayBtn && classicPlayBtn.offsetParent !== null) ? classicPlayBtn : mainPlayBtn;
+    if (!target) return;
+
+    target.focus();
+    target.classList.add('controller-active');
+    setTimeout(() => target.classList.remove('controller-active'), 180);
+}
+
 window.onload = async () => {
     try {
         await migrateLegacyConfig();
@@ -485,10 +577,20 @@ window.onload = async () => {
         loadSplashText();
         MusicManager.init();
         GamepadManager.init();
+        UiSoundManager.init();
+
+        if (isSteamDeckEnvironment()) {
+            ipcRenderer.send('window-set-fullscreen', true);
+            setTimeout(() => focusPrimaryPlayButton(), 150);
+        }
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'F9') {
                 checkForLauncherUpdates(true);
+            }
+            if (e.key === 'F11') {
+                e.preventDefault();
+                ipcRenderer.send('window-fullscreen');
             }
         });
 
@@ -528,8 +630,10 @@ async function toggleInstances(show) {
         document.activeElement?.blur();
         modal.style.display = 'flex';
         modal.style.opacity = '1';
+        UiSoundManager.play('popupOpen');
     } else {
         modal.style.opacity = '0';
+        UiSoundManager.play('popupClose');
         setTimeout(() => modal.style.display = 'none', 300);
     }
 }
@@ -574,8 +678,10 @@ function toggleAddInstance(show) {
         document.getElementById('new-instance-repo').value = DEFAULT_REPO;
         modal.style.display = 'flex';
         modal.style.opacity = '1';
+        UiSoundManager.play('popupOpen');
     } else {
         modal.style.opacity = '0';
+        UiSoundManager.play('popupClose');
         setTimeout(() => modal.style.display = 'none', 300);
     }
 }
@@ -950,8 +1056,10 @@ async function promptUpdate(newTag) {
         document.activeElement?.blur();
         modal.style.display = 'flex';
         modal.style.opacity = '1';
+        UiSoundManager.play('popupOpen');
         const cleanup = (result) => {
             modal.style.opacity = '0';
+            UiSoundManager.play('popupClose');
             setTimeout(() => {
                 modal.style.display = 'none';
                 if (modalText) modalText.style.display = 'none';
@@ -1143,22 +1251,23 @@ function toggleOptions(show) {
         const cb = document.getElementById('classic-theme-checkbox');
         if (cb) cb.checked = document.body.classList.contains('classic-theme');
         document.activeElement?.blur(); modal.style.display = 'flex'; modal.style.opacity = '1';
+        UiSoundManager.play('popupOpen');
     }
-    else { modal.style.opacity = '0'; setTimeout(() => modal.style.display = 'none', 300); }
+    else { modal.style.opacity = '0'; UiSoundManager.play('popupClose'); setTimeout(() => modal.style.display = 'none', 300); }
 }
 
 async function toggleProfile(show) {
     if (isProcessing) return;
     const modal = document.getElementById('profile-modal');
-    if (show) { await updatePlaytimeDisplay(); document.activeElement?.blur(); modal.style.display = 'flex'; modal.style.opacity = '1'; }
-    else { modal.style.opacity = '0'; setTimeout(() => modal.style.display = 'none', 300); }
+    if (show) { await updatePlaytimeDisplay(); document.activeElement?.blur(); modal.style.display = 'flex'; modal.style.opacity = '1'; UiSoundManager.play('popupOpen'); }
+    else { modal.style.opacity = '0'; UiSoundManager.play('popupClose'); setTimeout(() => modal.style.display = 'none', 300); }
 }
 
 async function toggleServers(show) {
     if (isProcessing) return;
     const modal = document.getElementById('servers-modal');
-    if (show) { await loadServers(); document.activeElement?.blur(); modal.style.display = 'flex'; modal.style.opacity = '1'; }
-    else { modal.style.opacity = '0'; setTimeout(() => modal.style.display = 'none', 300); }
+    if (show) { await loadServers(); document.activeElement?.blur(); modal.style.display = 'flex'; modal.style.opacity = '1'; UiSoundManager.play('popupOpen'); }
+    else { modal.style.opacity = '0'; UiSoundManager.play('popupClose'); setTimeout(() => modal.style.display = 'none', 300); }
 }
 
 async function getServersFilePath() { return path.join(currentInstance.installPath, 'servers.txt'); }
@@ -1272,6 +1381,7 @@ async function saveProfile() {
 
 function showToast(msg) {
     const t = document.getElementById('toast'); if (!t) return;
+    UiSoundManager.playToast(msg);
     t.textContent = msg; t.style.display = 'block'; t.style.animation = 'none'; t.offsetHeight; t.style.animation = 'slideUp 0.3s ease-out';
     setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
@@ -1282,20 +1392,81 @@ function scanCompatibilityLayers() {
     const select = document.getElementById('compat-select'); if (!select) return;
     const savedValue = currentInstance.compatLayer;
     const layers = [{ name: 'Default (Direct)', cmd: 'direct' }, { name: 'Wine64', cmd: 'wine64' }, { name: 'Wine', cmd: 'wine' }];
-    
-    // Add custom option
-    layers.push({ name: 'Custom (Linux)', cmd: 'custom' });
-    
-    const homeDir = require('os').homedir(); let steamPaths = [];
-    if (process.platform === 'linux') steamPaths = [path.join(homeDir, '.steam', 'steam', 'steamapps', 'common'), path.join(homeDir, '.local', 'share', 'Steam', 'steamapps', 'common'), path.join(homeDir, '.var', 'app', 'com.valvesoftware.Steam', 'data', 'Steam', 'steamapps', 'common')];
-    else if (process.platform === 'darwin') steamPaths = [path.join(homeDir, 'Library', 'Application Support', 'Steam', 'steamapps', 'common')];
-    for (const steamPath of steamPaths) {
-        if (fs.existsSync(steamPath)) { try { const dirs = fs.readdirSync(steamPath); dirs.filter(d => d.startsWith('Proton') || d.includes('Wine') || d.includes('CrossOver')).forEach(d => { const protonPath = path.join(steamPath, d, 'proton'); if (fs.existsSync(protonPath)) layers.push({ name: d, cmd: protonPath }); }); } catch (e) {} }
+
+    const seen = new Set(layers.map(l => l.cmd));
+    const foundProtonLayers = [];
+    const addLayer = (name, cmd) => {
+        if (!name || !cmd || seen.has(cmd)) return;
+        seen.add(cmd);
+        foundProtonLayers.push({ name, cmd });
+    };
+
+    const homeDir = require('os').homedir();
+    const protonCandidates = [];
+
+    if (process.platform === 'linux') {
+        const steamRoots = [
+            path.join(homeDir, '.steam', 'steam'),
+            path.join(homeDir, '.local', 'share', 'Steam'),
+            path.join(homeDir, '.var', 'app', 'com.valvesoftware.Steam', 'data', 'Steam')
+        ];
+
+        steamRoots.forEach((root) => {
+            protonCandidates.push(path.join(root, 'steamapps', 'common'));
+            protonCandidates.push(path.join(root, 'compatibilitytools.d'));
+        });
+    } else if (process.platform === 'darwin') {
+        protonCandidates.push(path.join(homeDir, 'Library', 'Application Support', 'Steam', 'steamapps', 'common'));
+        protonCandidates.push(path.join(homeDir, 'Library', 'Application Support', 'Steam', 'compatibilitytools.d'));
     }
+
+    const toolNameMatches = (dir) => {
+        const n = dir.toLowerCase();
+        return n.startsWith('proton') || n.startsWith('ge-proton') || n.includes('proton-ge') || n.includes('wine') || n.includes('crossover') || n.includes('umu-proton');
+    };
+
+    for (const basePath of protonCandidates) {
+        if (!fs.existsSync(basePath)) continue;
+        try {
+            const dirs = fs.readdirSync(basePath);
+            dirs.forEach((dirName) => {
+                if (!toolNameMatches(dirName)) return;
+                const protonPath = path.join(basePath, dirName, 'proton');
+                if (fs.existsSync(protonPath)) addLayer(dirName, protonPath);
+            });
+        } catch (e) {
+            console.error('Compatibility scan error:', e.message);
+        }
+    }
+
+    foundProtonLayers.sort((a, b) => {
+        const aGe = /(^|\b)(ge-proton|proton-ge|umu-proton)/i.test(a.name) ? 1 : 0;
+        const bGe = /(^|\b)(ge-proton|proton-ge|umu-proton)/i.test(b.name) ? 1 : 0;
+        if (aGe !== bGe) return bGe - aGe;
+        return b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    layers.push(...foundProtonLayers);
+
+    // Add custom option at end so discovered runtimes are easier to browse first.
+    layers.push({ name: 'Custom (Linux)', cmd: 'custom' });
+
     select.innerHTML = '';
-    layers.forEach(l => { const opt = document.createElement('option'); opt.value = l.cmd; opt.textContent = l.name; select.appendChild(opt); if (l.cmd === savedValue) opt.selected = true; });
+    layers.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l.cmd;
+        opt.textContent = l.name;
+        select.appendChild(opt);
+        if (l.cmd === savedValue) opt.selected = true;
+    });
+
+    // If no saved compat layer or still on direct, prefer the newest detected GE/Proton on Linux.
+    if (process.platform === 'linux' && (savedValue === 'direct' || !savedValue) && foundProtonLayers.length > 0) {
+        select.value = foundProtonLayers[0].cmd;
+    }
+
     updateCompatDisplay();
-    
+
     const customPathInput = document.getElementById('custom-proton-path');
     if (customPathInput) customPathInput.value = currentInstance.customCompatPath || "";
 }
@@ -1363,8 +1534,9 @@ async function promptLauncherUpdate(version, changelog) {
             modalText.style.display = 'block';
         }
         document.activeElement?.blur(); modal.style.display = 'flex'; modal.style.opacity = '1';
+        UiSoundManager.play('popupOpen');
         const cleanup = (result) => {
-            modal.style.opacity = '0'; setTimeout(() => { modal.style.display = 'none'; if (modalText) modalText.style.display = 'none'; }, 300);
+            modal.style.opacity = '0'; UiSoundManager.play('popupClose'); setTimeout(() => { modal.style.display = 'none'; if (modalText) modalText.style.display = 'none'; }, 300);
             confirmBtn.onclick = null; skipBtn.onclick = null; closeBtn.onclick = null; resolve(result);
         };
         confirmBtn.onclick = () => cleanup(true); skipBtn.onclick = () => cleanup(false); closeBtn.onclick = () => cleanup(false);
@@ -1475,8 +1647,10 @@ async function toggleSnapshots(show, id = null) {
         document.activeElement?.blur();
         modal.style.display = 'flex';
         modal.style.opacity = '1';
+        UiSoundManager.play('popupOpen');
     } else {
         modal.style.opacity = '0';
+        UiSoundManager.play('popupClose');
         setTimeout(() => modal.style.display = 'none', 300);
     }
 }

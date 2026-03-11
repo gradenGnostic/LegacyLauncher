@@ -348,7 +348,7 @@ body {
     box-shadow: inset -3px -3px 0px #333, inset 3px 3px 0px #aaa;
     margin-bottom: 16px;
     position: relative;
-    transition: transform(0.05s);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
 .nav-item {
@@ -358,9 +358,10 @@ body {
 }
 
 .nav-item:focus {
-    transform: scale(1.05);
+    transform: scale(1.04);
     z-index: 1000;
-    box-shadow: 0 0 0 3px #fff, 0 0 20px rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.92), 0 0 10px rgba(255, 255, 255, 0.62), 0 0 20px rgba(90, 170, 255, 0.28) !important;
+    filter: brightness(1.08);
 }
 
 .nav-item.active-bump {
@@ -371,7 +372,8 @@ body {
 .btn-mc:hover:not(.disabled) {
     background-color: var(--mc-button-hover);
     color: #fff;
-    outline: 2px solid #fff !important;
+    outline: 1px solid rgba(255,255,255,0.95) !important;
+    box-shadow: inset -3px -3px 0px #333, inset 3px 3px 0px #aaa, 0 0 12px rgba(255,255,255,0.25);
 }
 
 .btn-mc.controller-active {

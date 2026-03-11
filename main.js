@@ -38,6 +38,12 @@ function createWindow() {
     }
   });
   ipcMain.on('window-close', () => win.close());
+  ipcMain.on('window-fullscreen', () => {
+    win.setFullScreen(!win.isFullScreen());
+  });
+  ipcMain.on('window-set-fullscreen', (event, enabled) => {
+    win.setFullScreen(Boolean(enabled));
+  });
 
   ipcMain.handle('store-get', (event, key) => store.get(key));
   ipcMain.handle('store-set', (event, key, value) => store.set(key, value));
