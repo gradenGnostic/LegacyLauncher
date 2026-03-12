@@ -617,6 +617,52 @@ function applyRepoPreset() {
     repoInput.value = presetSelect.value;
 }
 
+
+function applyControllerLayoutPresetState(layoutMode = 'auto') {
+    const presets = document.querySelectorAll('.controller-layout-preset');
+    const activeLayout = layoutMode === 'nintendo' ? 'nintendo' : 'xbox';
+    presets.forEach((preset) => {
+        const isActive = preset.dataset.layout === activeLayout;
+        preset.classList.toggle('active', isActive);
+        preset.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+}
+
+function initControllerLayoutPresets() {
+    const layoutSelect = document.getElementById('controller-layout-select');
+    if (!layoutSelect) return;
+
+    const presets = document.querySelectorAll('.controller-layout-preset');
+    presets.forEach((preset) => {
+        const pressOn = () => preset.classList.add('is-pressed');
+        const pressOff = () => preset.classList.remove('is-pressed');
+
+        preset.addEventListener('pointerdown', pressOn);
+        preset.addEventListener('pointerup', pressOff);
+        preset.addEventListener('pointerleave', pressOff);
+        preset.addEventListener('blur', pressOff);
+
+        preset.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') pressOn();
+        });
+        preset.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') pressOff();
+        });
+
+        preset.addEventListener('click', () => {
+            const selectedLayout = preset.dataset.layout || 'xbox';
+            layoutSelect.value = selectedLayout;
+            applyControllerLayoutPresetState(selectedLayout);
+        });
+    });
+
+    layoutSelect.addEventListener('change', () => {
+        applyControllerLayoutPresetState(layoutSelect.value || 'auto');
+    });
+
+    applyControllerLayoutPresetState(layoutSelect.value || 'auto');
+}
+
 window.onload = async () => {
     try {
         await migrateLegacyConfig();
@@ -641,6 +687,7 @@ window.onload = async () => {
         if (serverCheck) serverCheck.checked = currentInstance.isServer;
         if (installInput) installInput.value = currentInstance.installPath;
         if (controllerLayoutSelect) controllerLayoutSelect.value = await Store.get('legacy_controller_layout_mode', 'auto');
+        initControllerLayoutPresets();
         syncRepoPresetFromInput();
         
         if (process.platform === 'linux' || process.platform === 'darwin') {
@@ -1349,6 +1396,7 @@ async function toggleOptions(show) {
             const savedLayoutMode = await Store.get('legacy_controller_layout_mode', 'auto');
             layoutSelect.value = savedLayoutMode;
             GamepadManager.setControlLayoutMode(savedLayoutMode);
+            applyControllerLayoutPresetState(savedLayoutMode);
         }
         syncRepoPresetFromInput();
         document.activeElement?.blur(); modal.style.display = 'flex'; modal.style.opacity = '1';
@@ -1471,6 +1519,7 @@ async function saveOptions() {
     await Store.set('legacy_steamdeck_mode', isSteamDeckMode);
     await Store.set('legacy_controller_layout_mode', controllerLayoutMode);
     GamepadManager.setControlLayoutMode(controllerLayoutMode);
+    applyControllerLayoutPresetState(controllerLayoutMode);
     applyTheme(isClassic);
     applySteamDeckMode(isSteamDeckMode);
     await saveInstancesToStore(); toggleOptions(false); fetchGitHubData(); updatePlayButtonText(); showToast("Settings Saved");
@@ -1716,7 +1765,10 @@ async function loadControllerLayoutMode() {
     const mode = await Store.get('legacy_controller_layout_mode', 'auto');
     GamepadManager.setControlLayoutMode(mode);
     const select = document.getElementById('controller-layout-select');
-    if (select) select.value = mode;
+    if (select) {
+        select.value = mode;
+        applyControllerLayoutPresetState(mode);
+    }
 }
 
 function applySteamDeckMode(enabled) {

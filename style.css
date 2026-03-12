@@ -452,6 +452,18 @@ body.steamdeck-mode .nav-item:focus {
     box-shadow: 0 0 0 2px rgba(255,255,255,0.95), 0 0 22px rgba(255,255,255,0.7), 0 0 34px rgba(90,170,255,0.36) !important;
 }
 
+
+body.steamdeck-mode .controller-layout-preset {
+    min-height: 62px;
+    font-size: 22px;
+}
+
+body.steamdeck-mode .controller-layout-icon {
+    transform: scale(1.3);
+    transform-origin: left center;
+    margin-right: 4px;
+}
+
 body.steamdeck-mode .sidebar {
     width: 420px;
 }
@@ -669,6 +681,92 @@ body.steamdeck-mode .sidebar {
 
 .mc-input:focus, .mc-input.focused {
     border-color: #fff !important;
+}
+
+
+.controller-layout-presets {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.controller-layout-preset {
+    width: 100%;
+    min-height: 52px;
+    border: 2px solid #555;
+    background: #0a0a0a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 19px;
+    text-align: left;
+}
+
+.controller-layout-preset:hover,
+.controller-layout-preset:focus {
+    border-color: #fff;
+}
+
+.controller-layout-preset.active {
+    border-color: #55ff55;
+    box-shadow: inset 0 0 0 1px #55ff55;
+    background: #111;
+}
+
+.controller-layout-icon {
+    --sprite-x: -51px;
+    --sprite-y: -531px;
+    --sprite-w: 26px;
+    --sprite-h: 26px;
+    --sprite-pressed-x: -51px;
+    --sprite-pressed-y: -563px;
+    width: var(--sprite-w);
+    height: var(--sprite-h);
+    flex: 0 0 var(--sprite-w);
+    display: inline-block;
+    overflow: hidden;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+    background-size: 560px 640px;
+    background-position: var(--sprite-x) var(--sprite-y);
+}
+
+.controller-layout-preset:hover .controller-layout-icon,
+.controller-layout-preset:focus .controller-layout-icon,
+.controller-layout-preset.active .controller-layout-icon,
+.controller-layout-preset.is-pressed .controller-layout-icon {
+    background-position: var(--sprite-pressed-x) var(--sprite-pressed-y);
+}
+
+.controller-layout-icon-xbox {
+    background-image: url('gdb-xbox-2.png');
+    /* action_button_189 (idle) + action_button_228 (pressed) from spritesheet JSON */
+    --sprite-x: -51px;
+    --sprite-y: -531px;
+    --sprite-w: 26px;
+    --sprite-h: 26px;
+    --sprite-pressed-x: -51px;
+    --sprite-pressed-y: -563px;
+}
+
+.controller-layout-icon-switch {
+    background-image: url('gdb-switch-2.png');
+    /* Switch sheet uses the same atlas layout coordinates */
+    --sprite-x: -51px;
+    --sprite-y: -531px;
+    --sprite-w: 26px;
+    --sprite-h: 26px;
+    --sprite-pressed-x: -51px;
+    --sprite-pressed-y: -563px;
+}
+
+.controller-layout-text {
+    line-height: 1.2;
 }
 
 #server-checkbox.focused {
