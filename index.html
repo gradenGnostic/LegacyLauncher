@@ -13,9 +13,9 @@
     <div class="title-bar">
         <div class="title-bar-text">LegacyLauncher</div>
         <div class="window-controls">
-            <div class="win-btn" onclick="minimizeWindow()">−</div>
-            <div class="win-btn" id="maximize-btn" onclick="toggleMaximize()">▢</div>
-            <div class="win-btn close" onclick="closeWindow()">×</div>
+            <div class="win-btn nav-item" onclick="minimizeWindow()" tabindex="0" title="Minimize">−</div>
+            <div class="win-btn nav-item" id="maximize-btn" onclick="toggleMaximize()" tabindex="0" title="Maximize / Restore">▢</div>
+            <div class="win-btn close nav-item" onclick="closeWindow()" tabindex="0" title="Close">×</div>
         </div>
     </div>
 
@@ -201,6 +201,12 @@
             <div class="mc-input-group">
                 <label class="mc-label">GitHub Repository Source:</label>
                 <input type="text" id="repo-input" class="mc-input nav-item" placeholder="user/repo" tabindex="0">
+                <label class="mc-label" style="margin-top: 10px;">Repository Preset:</label>
+                <select id="repo-preset-select" class="mc-input nav-item" onchange="applyRepoPreset()" tabindex="0" style="height: 48px; margin-top: 8px;">
+                    <option value="custom">Custom</option>
+                    <option value="smartcmd/MinecraftConsoles">smartcmd (default)</option>
+                    <option value="cath0degaytube/MinecraftConsoles">cath0degaytube (no watermark)</option>
+                </select>
             </div>
 
             <div class="mc-input-group">
@@ -252,6 +258,32 @@
                     <input type="checkbox" id="classic-theme-checkbox" class="nav-item" style="width: 24px; height: 24px; margin-right: 12px; cursor: pointer;" tabindex="0">
                     Use Classic Minecraft Launcher UI
                 </label>
+            </div>
+
+            <div class="mc-input-group">
+                <label class="mc-label" style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="steamdeck-mode-checkbox" class="nav-item" style="width: 24px; height: 24px; margin-right: 12px; cursor: pointer;" tabindex="0">
+                    Use Steam Deck Optimized UI Mode
+                </label>
+            </div>
+
+            <div class="mc-input-group">
+                <label class="mc-label">Controller Confirm/Cancel Layout:</label>
+                <select id="controller-layout-select" class="mc-input nav-item" tabindex="0" style="height: 48px; margin-top: 8px;">
+                    <option value="auto">Auto Detect (Recommended)</option>
+                    <option value="xbox">Xbox Style (A = Confirm, B = Cancel)</option>
+                    <option value="nintendo">Nintendo Style (B = Confirm, A = Cancel)</option>
+                </select>
+                <div id="controller-layout-presets" class="controller-layout-presets" role="radiogroup" aria-label="Controller layout presets">
+                    <button type="button" class="controller-layout-preset nav-item" data-layout="xbox" tabindex="0" aria-pressed="false">
+                        <span class="controller-layout-icon controller-layout-icon-xbox" aria-hidden="true"></span>
+                        <span class="controller-layout-text">Xbox Style (A = Confirm, B = Cancel)</span>
+                    </button>
+                    <button type="button" class="controller-layout-preset nav-item" data-layout="nintendo" tabindex="0" aria-pressed="false">
+                        <span class="controller-layout-icon controller-layout-icon-switch" aria-hidden="true"></span>
+                        <span class="controller-layout-text">Nintendo Style (B = Confirm, A = Cancel)</span>
+                    </button>
+                </div>
             </div>
 
             <div class="flex gap-4 w-full mt-4">

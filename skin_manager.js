@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (skinInput) skinInput.addEventListener('change', (e) => handleSkinFile(e.target.files[0]));
     
     if (dropZone) {
+        dropZone.addEventListener('click', () => skinInput?.click());
+        dropZone.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                skinInput?.click();
+            }
+        });
         dropZone.addEventListener('dragover', (e) => { 
             e.preventDefault(); 
             dropZone.classList.add('border-green-500'); 
