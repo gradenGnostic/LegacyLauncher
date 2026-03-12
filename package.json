@@ -1,6 +1,6 @@
 {
   "name": "legacylauncher",
-  "version": "3.0.1",
+  "version": "3.5.0",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -30,7 +30,15 @@
         "flatpak"
       ],
       "category": "Game",
-      "icon": "512x512.png"
+      "icon": "512x512.png",
+      "desktop": {
+        "Name": "Minecraft LCE Launcher",
+        "GenericName": "Minecraft Launcher",
+        "Comment": "A Minecraft: Legacy Console Edition launcher",
+        "Categories": "Game;Emulation;",
+        "StartupNotify": "true"
+      },
+      "executableName": "legacylauncher"
     },
     "mac": {
       "target": [

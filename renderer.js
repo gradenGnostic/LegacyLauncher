@@ -353,7 +353,7 @@ const GamepadManager = {
 const UiSoundManager = {
     files: {
         cursor: 'JDSherbert - Ultimate UI SFX Pack - Cursor - 1.mp3',
-        select: 'JDSherbert - Ultimate UI SFX Pack - Select - 1.mp3',
+        select: 'Click_stereo.ogg.mp3',
         cancel: 'JDSherbert - Ultimate UI SFX Pack - Cancel - 1.mp3',
         popupOpen: 'JDSherbert - Ultimate UI SFX Pack - Popup Open - 1.mp3',
         popupClose: 'JDSherbert - Ultimate UI SFX Pack - Popup Close - 1.mp3',
@@ -370,7 +370,7 @@ const UiSoundManager = {
     },
 
     shouldPlay() {
-        return this.inputSource === 'controller';
+        return true; // Play sounds for both controller and mouse/keyboard
     },
 
     init() {
@@ -448,11 +448,20 @@ const MusicManager = {
         }
         
         const slider = document.getElementById('volume-slider');
+        const percentText = document.getElementById('volume-percent');
+        const updatePercent = () => {
+            if (percentText) {
+                percentText.textContent = Math.round(this.audio.volume * 100) + "%";
+            }
+        };
+
         if (slider) {
             slider.value = this.audio.volume;
+            updatePercent();
             slider.oninput = async () => {
                 this.audio.volume = slider.value;
-                await Store.set('legacy_music_volume', this.audio.volume);
+                updatePercent();
+                await Store.set('legacy_music_volume', parseFloat(slider.value));
             };
         }
     },
@@ -722,7 +731,31 @@ window.onload = async () => {
             setTimeout(() => focusPrimaryPlayButton(), 150);
         }
 
-        window.addEventListener('keydown', (e) => {
+        async function takeScreenshot() {
+            try {
+                const filePath = await ipcRenderer.invoke('take-screenshot');
+                showToast(`Screenshot saved to: ${path.basename(filePath)}`);
+                UiSoundManager.play('select');
+                
+                // Refresh gallery if it is visible
+                const galleryModal = document.getElementById('gallery-modal');
+                if (galleryModal && galleryModal.style.display === 'flex') {
+                    renderGallery();
+                }
+            } catch (err) {
+                console.error("Screenshot error:", err);
+                showToast("Failed to take screenshot.");
+            }
+        }
+
+        ipcRenderer.on('trigger-screenshot', () => {
+            takeScreenshot();
+        });
+
+        window.addEventListener('keydown', async (e) => {
+            if (e.key === 'F2') {
+                takeScreenshot();
+            }
             if (e.key === 'F9') {
                 checkForLauncherUpdates(true);
             }
@@ -910,6 +943,85 @@ async function browseInstallDir() {
     }
 }
 
+async function openScreenshotsGallery() {
+    await toggleGallery(true);
+}
+
+async function toggleGallery(show) {
+    const modal = document.getElementById('gallery-modal');
+    if (show) {
+        await renderGallery();
+        modal.style.display = 'flex';
+        modal.style.opacity = '1';
+        UiSoundManager.play('popupOpen');
+    } else {
+        modal.style.opacity = '0';
+        UiSoundManager.play('popupClose');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+}
+
+async function renderGallery() {
+    const container = document.getElementById('gallery-container');
+    container.innerHTML = '<div class="gallery-empty">LOADING...</div>';
+    
+    try {
+        const screenshots = await ipcRenderer.invoke('list-screenshots');
+        container.innerHTML = '';
+
+        if (screenshots.length === 0) {
+            container.innerHTML = `
+                <div class="gallery-empty">
+                    <p>NO SCREENSHOTS FOUND</p>
+                    <p style="font-size: 14px; margin-top: 10px;">PRESS F2 TO TAKE ONE!</p>
+                </div>
+            `;
+            return;
+        }
+
+        screenshots.forEach(ss => {
+            const item = document.createElement('div');
+            item.className = 'gallery-item nav-item';
+            item.tabIndex = 0;
+            item.innerHTML = `
+                <img src="${ss.path}?t=${Date.now()}" class="gallery-thumb" alt="${ss.name}" onerror="this.src='minecraft.jpg'">
+                <div class="gallery-item-actions">
+                    <div class="gallery-action-btn" onclick="viewScreenshot('${ss.path.replace(/\\/g, '/')}')">VIEW</div>
+                    <div class="gallery-action-btn delete" onclick="deleteScreenshot('${ss.name}')">DELETE</div>
+                </div>
+            `;
+            item.onkeydown = (e) => {
+                if (e.key === 'Enter' || e.key === ' ') viewScreenshot(ss.path);
+                if (e.key === 'Delete') deleteScreenshot(ss.name);
+            };
+            container.appendChild(item);
+        });
+    } catch (err) {
+        console.error("Gallery render error:", err);
+        container.innerHTML = '<div class="gallery-empty" style="color: #ff5555;">ERROR LOADING GALLERY</div>';
+    }
+}
+
+async function deleteScreenshot(fileName) {
+    if (confirm(`Are you sure you want to delete this screenshot?`)) {
+        const success = await ipcRenderer.invoke('delete-screenshot', fileName);
+        if (success) {
+            showToast("Screenshot deleted.");
+            renderGallery();
+        } else {
+            showToast("Failed to delete screenshot.");
+        }
+    }
+}
+
+function viewScreenshot(path) {
+    shell.openPath(path);
+}
+
+async function openScreenshotsDir() {
+    ipcRenderer.invoke('open-screenshots-dir');
+}
+
 async function openGameDir() {
     const dir = await getInstallDir();
     if (fs.existsSync(dir)) {
@@ -971,6 +1083,7 @@ async function updatePlayButtonText() {
 function setGameRunning(running) {
     isGameRunning = running;
     updatePlayButtonText();
+    ipcRenderer.send('game-running-state', running);
 }
 
 async function monitorProcess(proc) {
@@ -1746,7 +1859,8 @@ async function loadSplashText() {
 // ============================================================
 
 async function loadTheme() {
-    const isClassic = await Store.get('legacy_classic_theme', false);
+    // Force default UI on startup
+    const isClassic = false;
     const cb = document.getElementById('classic-theme-checkbox');
     if (cb) cb.checked = isClassic;
     applyTheme(isClassic);

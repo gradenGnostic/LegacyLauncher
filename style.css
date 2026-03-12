@@ -113,15 +113,16 @@ body {
 
 .sidebar {
     width: 380px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.75);
     border-right: 4px solid #000;
     display: flex;
     flex-direction: column;
     padding: 30px 20px;
     overflow-y: auto;
     z-index: 10;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+    box-shadow: 10px 0 20px rgba(0,0,0,0.5);
 }
 
 .sidebar.collapsed {
@@ -345,7 +346,7 @@ body {
     width: 500px;
     max-width: 90%;
     height: 60px;
-    background-color: var(--mc-button-bg);
+    background: linear-gradient(to bottom, #7e7e7e, #6e6e6e);
     border: 2px solid #000;
     color: #e0e0e0;
     font-size: 24px;
@@ -354,39 +355,42 @@ body {
     justify-content: center;
     padding-bottom: 6px;
     cursor: pointer;
-    box-shadow: inset -3px -3px 0px #333, inset 3px 3px 0px #aaa;
+    box-shadow: inset -3px -3px 0px #333, inset 3px 3px 0px #aaa, 0 4px 6px rgba(0,0,0,0.3);
     margin-bottom: 16px;
     position: relative;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+    text-shadow: 2px 2px 0 #333;
 }
 
 .nav-item {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     outline: none !important;
 }
 
 .nav-item:focus {
-    transform: scale(1.04);
+    transform: scale(1.02);
     z-index: 1000;
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.92), 0 0 10px rgba(255, 255, 255, 0.62), 0 0 20px rgba(90, 170, 255, 0.28) !important;
-    filter: brightness(1.08);
+    box-shadow: 0 0 0 2px #fff, 0 0 10px rgba(255, 255, 255, 0.62), 0 0 20px rgba(90, 170, 255, 0.28) !important;
+    filter: brightness(1.1);
 }
 
 .nav-item:hover {
-    outline: 1px solid rgba(255,255,255,0.92) !important;
+    outline: 2px solid rgba(255,255,255,0.92) !important;
     box-shadow: 0 0 0 1px rgba(255,255,255,0.85), 0 0 12px rgba(255, 255, 255, 0.52), 0 0 24px rgba(90, 170, 255, 0.22) !important;
 }
 
 .nav-item.active-bump {
-    transform: scale(0.95) !important;
-    transition: transform 0.1s !important;
+    transform: scale(0.96) !important;
+    transition: transform 0.05s !important;
+    box-shadow: inset 3px 3px 0px #333, inset -3px -3px 0px #aaa !important;
+    background: linear-gradient(to bottom, #555, #666) !important;
 }
 
 .btn-mc:hover:not(.disabled) {
-    background-color: var(--mc-button-hover);
+    background: linear-gradient(to bottom, #8e8e8e, #7e7e7e);
     color: #fff;
-    outline: 1px solid rgba(255,255,255,0.95) !important;
+    outline: 2px solid rgba(255,255,255,0.95) !important;
     box-shadow: inset -3px -3px 0px #333, inset 3px 3px 0px #aaa, 0 0 12px rgba(255,255,255,0.25);
 }
 
@@ -588,14 +592,14 @@ body.steamdeck-mode .sidebar {
     max-width: 850px;
     min-width: 600px;
     max-height: 85vh;
-    background: var(--mc-gui-bg);
+    background: #c6c6c6;
     border: 4px solid #000;
     padding: clamp(20px, 4vw, 50px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: inset 4px 4px 0 #fff;
-    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: inset 4px 4px 0 #fff, inset -4px -4px 0 #555, 0 20px 50px rgba(0,0,0,0.8);
+    animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow-y: auto;
 }
@@ -676,11 +680,14 @@ body.steamdeck-mode .sidebar {
     padding: 12px;
     font-size: 22px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
 }
 
 .mc-input:focus, .mc-input.focused {
     border-color: #fff !important;
+    background: #111;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2), inset 2px 2px 5px rgba(0,0,0,0.5);
 }
 
 
@@ -872,6 +879,25 @@ select.hidden-select {
     opacity: 0;
     cursor: pointer;
     width: 100%;
+    /* Fix for Linux contrast issues in native dropdowns */
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+select.hidden-select option {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+/* Ensure all select elements have good contrast on Linux */
+select.mc-input {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+select.mc-input option {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
 }
 
 ::-webkit-scrollbar {
@@ -891,6 +917,135 @@ select.hidden-select {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #7e7e7e;
+}
+
+/* --- Minecraft Style Slider --- */
+.mc-slider-container {
+    position: relative;
+    width: 100%;
+    height: 44px;
+    background: #000;
+    border: 2px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mc-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    outline: none;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    margin: 0;
+}
+
+.mc-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+}
+
+.mc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 100%;
+    background: #6e6e6e;
+    border: 2px solid #fff;
+    box-shadow: inset -2px -2px 0 #333, inset 2px 2px 0 #aaa;
+}
+
+.mc-slider:focus::-webkit-slider-thumb {
+    background: #7e7e7e;
+    box-shadow: inset -2px -2px 0 #333, inset 2px 2px 0 #aaa, 0 0 8px #fff;
+}
+
+.mc-slider-percent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 20px;
+    text-shadow: 2px 2px 0 #000;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* --- Screenshots Gallery --- */
+.gallery-item {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #111;
+    border: 2px solid #444;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gallery-item:hover, .gallery-item:focus {
+    border-color: #fff;
+    transform: scale(1.02);
+    z-index: 10;
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
+}
+
+.gallery-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: auto;
+}
+
+.gallery-item-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: space-around;
+    padding: 4px;
+    transform: translateY(100%);
+    transition: transform 0.2s;
+}
+
+.gallery-item:hover .gallery-item-actions,
+.gallery-item:focus .gallery-item-actions {
+    transform: translateY(0);
+}
+
+.gallery-action-btn {
+    color: #fff;
+    font-size: 14px;
+    padding: 2px 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.gallery-action-btn:hover {
+    color: #55ff55;
+    text-shadow: 0 0 5px rgba(85,255,85,0.5);
+}
+
+.gallery-action-btn.delete:hover {
+    color: #ff5555;
+    text-shadow: 0 0 5px rgba(255,85,85,0.5);
+}
+
+.gallery-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #888;
+    font-size: 24px;
 }
 
 /* ============================================================

@@ -195,7 +195,10 @@
                     <input type="text" id="install-path-input" class="mc-input nav-item !mb-0" placeholder="Default: Documents/LegacyClient" tabindex="0">
                     <div class="btn-mc btn-mini nav-item !w-[60px] !h-[48px]" onclick="browseInstallDir()" tabindex="0">...</div>
                 </div>
-                <div class="btn-mc w-full !h-[40px] !text-lg !mb-0 nav-item" onclick="openGameDir()" tabindex="0">OPEN FOLDER</div>
+                <div class="flex gap-2">
+                    <div class="btn-mc flex-grow !h-[40px] !text-lg !mb-0 nav-item" onclick="openGameDir()" tabindex="0">GAME FOLDER</div>
+                    <div class="btn-mc flex-grow !h-[40px] !text-lg !mb-0 nav-item" onclick="openScreenshotsGallery()" tabindex="0">SCREENSHOTS</div>
+                </div>
             </div>
 
             <div class="mc-input-group">
@@ -232,7 +235,10 @@
 
             <div class="mc-input-group">
                 <label class="mc-label">Launcher Music Volume:</label>
-                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" class="nav-item w-full" tabindex="0">
+                <div class="mc-slider-container">
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1" class="mc-slider nav-item w-full" tabindex="0">
+                    <div id="volume-percent" class="mc-slider-percent">100%</div>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4 w-full mt-2">
@@ -289,6 +295,21 @@
             <div class="flex gap-4 w-full mt-4">
                 <div id="btn-options-done" class="btn-mc flex-grow nav-item" onclick="saveOptions()" tabindex="0">DONE</div>
                 <div id="btn-options-cancel" class="btn-mc flex-grow nav-item" onclick="toggleOptions(false)" tabindex="0">CANCEL</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="gallery-modal">
+        <div class="modal-box" style="max-width: 1000px; width: 85vw; height: 85vh;">
+            <div class="modal-title">SCREENSHOTS GALLERY</div>
+            
+            <div id="gallery-container" class="w-full flex-grow overflow-y-auto mb-6 border-2 border-[#555] bg-black p-4 grid grid-cols-2 md:grid-cols-3 gap-4 auto-rows-max">
+                <!-- Screenshots will be dynamically loaded here -->
+            </div>
+
+            <div class="flex gap-4 w-full">
+                <div class="btn-mc flex-grow nav-item" onclick="openScreenshotsDir()" tabindex="0">OPEN FOLDER</div>
+                <div class="btn-mc flex-grow nav-item" onclick="toggleGallery(false)" tabindex="0">DONE</div>
             </div>
         </div>
     </div>
