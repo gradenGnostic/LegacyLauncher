@@ -3,6 +3,7 @@
 
 let mainMenuScene, mainMenuCamera, mainMenuRenderer, mainMenuPlayerGroup;
 let isMainSkinDragging = false;
+let mainMenuSkinRenderMode = '3d';
 
 let skinScene, skinCamera, skinRenderer, skinPlayerGroup;
 let isSkinDragging = false;
@@ -75,12 +76,13 @@ function initMainMenuSkinViewer() {
     // Interaction for Main Menu Viewer
     let prevX = 0;
     container.addEventListener('mousedown', (e) => {
+        if (mainMenuSkinRenderMode !== '3d') return;
         isMainSkinDragging = true;
         prevX = e.clientX;
     });
     window.addEventListener('mouseup', () => isMainSkinDragging = false);
     window.addEventListener('mousemove', (e) => {
-        if (isMainSkinDragging && mainMenuPlayerGroup) {
+        if (mainMenuSkinRenderMode === '3d' && isMainSkinDragging && mainMenuPlayerGroup) {
             mainMenuPlayerGroup.rotation.y += (e.clientX - prevX) * 0.01;
             prevX = e.clientX;
         }
@@ -89,7 +91,9 @@ function initMainMenuSkinViewer() {
     // Auto-rotate slowly
     function animateMain() {
         requestAnimationFrame(animateMain);
-        if (!isMainSkinDragging && mainMenuPlayerGroup) mainMenuPlayerGroup.rotation.y += 0.005;
+        if (mainMenuSkinRenderMode === '3d' && !isMainSkinDragging && mainMenuPlayerGroup) {
+            mainMenuPlayerGroup.rotation.y += 0.005;
+        }
         if (mainMenuRenderer && mainMenuScene && mainMenuCamera) mainMenuRenderer.render(mainMenuScene, mainMenuCamera);
     }
     animateMain();
@@ -123,7 +127,7 @@ async function loadMainMenuSkin() {
             const img = new Image();
             img.onload = () => {
                 const isLegacy = img.height === 32;
-                updateSkinModel(img.src, isLegacy, mainMenuPlayerGroup);
+                updateSkinModel(img.src, isLegacy, mainMenuPlayerGroup, mainMenuSkinRenderMode);
             };
             img.src = url;
         } else {
@@ -134,7 +138,25 @@ async function loadMainMenuSkin() {
     }
 }
 
-function updateSkinModel(dataUrl, isLegacy, targetGroup) {
+function toggleMainSkinRenderMode() {
+    mainMenuSkinRenderMode = mainMenuSkinRenderMode === '3d' ? '2d' : '3d';
+    const modeButton = document.getElementById('btn-skin-render-mode');
+    if (modeButton) modeButton.textContent = mainMenuSkinRenderMode.toUpperCase();
+
+    const container = document.getElementById('main-skin-viewer');
+    if (container) {
+        container.style.cursor = mainMenuSkinRenderMode === '3d' ? 'grab' : 'default';
+    }
+    isMainSkinDragging = false;
+
+    if (mainMenuSkinRenderMode === '2d' && mainMenuPlayerGroup) {
+        mainMenuPlayerGroup.rotation.y = 0;
+    }
+
+    loadMainMenuSkin();
+}
+
+function updateSkinModel(dataUrl, isLegacy, targetGroup, renderMode = '3d') {
     if (!targetGroup) return;
 
     new THREE.TextureLoader().load(dataUrl, (texture) => {
@@ -178,6 +200,50 @@ function updateSkinModel(dataUrl, isLegacy, targetGroup) {
             left: [x+8, y+4, 4, 12], back: [x+12, y+4, 4, 12]
         });
 
+        const create2DPart = (tex, uvFront, width, height, x, y, scale = 1) => {
+            const texWidth = tex.image.width;
+            const texHeight = tex.image.height;
+            const partTex = tex.clone();
+            partTex.magFilter = THREE.NearestFilter;
+            partTex.minFilter = THREE.NearestFilter;
+            partTex.repeat.set(uvFront[2] / texWidth, uvFront[3] / texHeight);
+            partTex.offset.set(uvFront[0] / texWidth, 1 - (uvFront[1] + uvFront[3]) / texHeight);
+            partTex.needsUpdate = true;
+
+            const geometry = new THREE.PlaneGeometry(width, height);
+            const material = new THREE.MeshBasicMaterial({ map: partTex, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(x, y, 0);
+            mesh.scale.set(scale, scale, 1);
+            return mesh;
+        };
+
+        if (renderMode === '2d') {
+            const frontParts = [
+                create2DPart(texture, [8, 8, 8, 8], 8, 8, 0, 10),
+                create2DPart(texture, [40, 8, 8, 8], 8, 8, 0, 10, 1.12),
+                create2DPart(texture, [20, 20, 8, 12], 8, 12, 0, 0),
+                create2DPart(texture, [44, 20, 4, 12], 4, 12, -6, 0),
+                create2DPart(texture, isLegacy ? [44, 20, 4, 12] : [36, 52, 4, 12], 4, 12, 6, 0),
+                create2DPart(texture, [4, 20, 4, 12], 4, 12, -2, -12),
+                create2DPart(texture, isLegacy ? [4, 20, 4, 12] : [20, 52, 4, 12], 4, 12, 2, -12)
+            ];
+
+            if (!isLegacy) {
+                frontParts.push(
+                    create2DPart(texture, [20, 36, 8, 12], 8, 12, 0, 0, 1.05),
+                    create2DPart(texture, [44, 36, 4, 12], 4, 12, -6, 0, 1.05),
+                    create2DPart(texture, [52, 52, 4, 12], 4, 12, 6, 0, 1.05),
+                    create2DPart(texture, [4, 36, 4, 12], 4, 12, -2, -12, 1.05),
+                    create2DPart(texture, [4, 52, 4, 12], 4, 12, 2, -12, 1.05)
+                );
+            }
+
+            frontParts.forEach((part) => targetGroup.add(part));
+            targetGroup.rotation.y = 0;
+            return;
+        }
+
         // Head
         const headUvs = { top: [8, 0, 8, 8], bottom: [16, 0, 8, 8], right: [0, 8, 8, 8], left: [16, 8, 8, 8], front: [8, 8, 8, 8], back: [24, 8, 8, 8] };
         const head = createBodyPart(8, 8, 8, texture, headUvs);
@@ -218,6 +284,8 @@ function updateSkinModel(dataUrl, isLegacy, targetGroup) {
                 targetGroup.add(layer);
             }
         });
+
+        targetGroup.rotation.y = 0;
     });
 }
 
@@ -318,7 +386,7 @@ function processSkinImage(img, srcUrl, isInitialLoad = false) {
     }
     
     if (!skinScene) initPreviewEngine();
-    updateSkinModel(srcUrl, isLegacy, skinPlayerGroup);
+    updateSkinModel(srcUrl, isLegacy, skinPlayerGroup, '3d');
 }
 
 function initPreviewEngine() {
@@ -398,3 +466,4 @@ async function saveSkinToDisk() {
 window.openSkinManager = openSkinManager;
 window.initMainMenuSkinViewer = initMainMenuSkinViewer;
 window.loadMainMenuSkin = loadMainMenuSkin;
+window.toggleMainSkinRenderMode = toggleMainSkinRenderMode;

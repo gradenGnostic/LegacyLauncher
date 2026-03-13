@@ -1398,3 +1398,27 @@ body.classic-theme .sidebar-title {
 body.classic-theme .music-btn {
     bottom: 92px;
 }
+
+.skin-action-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.skin-action-btn {
+    height: 48px !important;
+    margin-bottom: 0 !important;
+}
+
+.skin-action-btn-main {
+    width: 250px;
+    font-size: 20px;
+    border-right-width: 1px;
+}
+
+.skin-action-btn-mode {
+    width: 64px;
+    font-size: 20px;
+    border-left-width: 1px;
+    margin-left: -2px;
+}
