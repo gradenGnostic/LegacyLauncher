@@ -1125,7 +1125,11 @@ async function fetchGitHubData() {
     const offlineInd = document.getElementById('offline-indicator');
 
     if (loader) loader.style.display = 'flex';
-    if (loaderText) loaderText.textContent = "SYNCING: " + repo;
+    if (loaderText) {
+        const loaderLabel = document.getElementById('loader-text-label');
+        if (loaderLabel) loaderLabel.textContent = "SYNCING: " + repo;
+        else loaderText.textContent = "SYNCING: " + repo;
+    }
 
     const hideLoader = () => {
         if (loader) {
@@ -1416,8 +1420,29 @@ function setProcessingState(active) {
 function updateProgress(percent, text) {
     const bar = document.getElementById('progress-bar-fill');
     if (bar) bar.style.width = percent + "%";
+
+    const label = document.getElementById('progress-text-label');
+    const dots = document.getElementById('progress-dots');
+    const suffix = document.getElementById('progress-text-suffix');
     const txt = document.getElementById('progress-text');
-    if (text && txt) txt.textContent = text;
+
+    if (!text) return;
+
+    if (label && dots && suffix) {
+        const match = text.match(/^(Downloading)(?:\.{0,3})?(.*)$/i);
+        if (match) {
+            label.textContent = match[1];
+            suffix.textContent = match[2] || '';
+            dots.classList.add('animate');
+            return;
+        }
+        label.textContent = text;
+        suffix.textContent = '';
+        dots.classList.remove('animate');
+        return;
+    }
+
+    if (txt) txt.textContent = text;
 }
 
 async function handleElectronFlow(url) {

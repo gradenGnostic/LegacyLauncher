@@ -22,7 +22,7 @@
     <div id="loader">
         <div class="loader-content">
             <div class="loader-spinner"></div>
-            <div id="loader-text">CONNECTING...</div>
+            <div id="loader-text"><span id="loader-text-label">CONNECTING</span><span class="loading-dots animate" id="loader-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span></div>
         </div>
     </div>
 
@@ -92,7 +92,10 @@
             </div>
             
             <div class="progress-container" id="progress-container">
-                <div class="progress-text" id="progress-text">Downloading...</div>
+                <div class="progress-text-wrap" id="progress-text-wrap">
+                    <span class="loader-spinner progress-spinner" id="progress-spinner" aria-hidden="true"></span>
+                    <div class="progress-text" id="progress-text"><span id="progress-text-label">Downloading</span><span class="loading-dots" id="progress-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span><span id="progress-text-suffix"></span></div>
+                </div>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill" id="progress-bar-fill"></div>
                 </div>
