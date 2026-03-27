@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Minecraft';
-    src: url('Minecraft.ttf') format('truetype');
+    src: url('assets/Minecraft.ttf') format('truetype');
 }
 
 
@@ -296,7 +296,7 @@ body {
 
 .content-area {
     flex-grow: 1;
-    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('minecraft.jpg');
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('assets/minecraft.jpg');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -810,7 +810,7 @@ body.steamdeck-mode .sidebar {
 }
 
 .controller-layout-icon-xbox {
-    background-image: url('gdb-xbox-2.png');
+    background-image: url('assets/gdb-xbox-2.png');
     /* action_button_189 (idle) + action_button_228 (pressed) from spritesheet JSON */
     --sprite-x: -51px;
     --sprite-y: -531px;
@@ -821,7 +821,7 @@ body.steamdeck-mode .sidebar {
 }
 
 .controller-layout-icon-switch {
-    background-image: url('gdb-switch-2.png');
+    background-image: url('assets/gdb-switch-2.png');
     /* Switch sheet uses the same atlas layout coordinates */
     --sprite-x: -51px;
     --sprite-y: -531px;
@@ -850,7 +850,7 @@ body.steamdeck-mode .sidebar {
     color: white;
     font-size: 36px;
     z-index: 2000;
-    background-image: url('minecraft.jpg');
+    background-image: url('assets/minecraft.jpg');
     background-size: cover;
     background-position: center;
 }
