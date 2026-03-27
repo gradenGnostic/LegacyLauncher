@@ -352,8 +352,8 @@ const GamepadManager = {
 
 const UiSoundManager = {
     files: {
-        cursor: 'JDSherbert - Ultimate UI SFX Pack - Cursor - 1.mp3',
-        select: 'Click_stereo.ogg.mp3',
+        cursor: 'JDSherbert - Ultimate UI SFX Pack - Cursor - 1.mp3', //doesnt exist?
+        select: 'assets/Click_stereo.ogg.mp3',
         cancel: 'JDSherbert - Ultimate UI SFX Pack - Cancel - 1.mp3',
         popupOpen: 'JDSherbert - Ultimate UI SFX Pack - Popup Open - 1.mp3',
         popupClose: 'JDSherbert - Ultimate UI SFX Pack - Popup Close - 1.mp3',
@@ -990,7 +990,7 @@ async function renderGallery() {
             item.className = 'gallery-item nav-item';
             item.tabIndex = 0;
             item.innerHTML = `
-                <img src="${ss.path}?t=${Date.now()}" class="gallery-thumb" alt="${ss.name}" onerror="this.src='minecraft.jpg'">
+                <img src="${ss.path}?t=${Date.now()}" class="gallery-thumb" alt="${ss.name}" onerror="this.src='assets/minecraft.jpg'">
                 <div class="gallery-item-actions">
                     <div class="gallery-action-btn" onclick="viewScreenshot('${ss.path.replace(/\\/g, '/')}')">VIEW</div>
                     <div class="gallery-action-btn delete" onclick="deleteScreenshot('${ss.name}')">DELETE</div>
